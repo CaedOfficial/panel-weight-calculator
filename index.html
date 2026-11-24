@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Panel Weight &amp; Freight Calculator</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-muted: #f1f5f9;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text: #0f172a;
+      --muted: #64748b;
+      --blue: #2563eb;
+      --blue-bg: #eff6ff;
+      --blue-border: #bfdbfe;
+      --green: #16a34a;
+      --green-bg: #f0fdf4;
+      --green-border: #bbf7d0;
+      --amber: #b45309;
+      --amber-bg: #fffbeb;
+      --amber-border: #fde68a;
+      --red: #b91c1c;
+      --red-bg: #fef2f2;
+      --red-border: #fecaca;
+      --radius: 12px;
+      --shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .title-group h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title-group p {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .tab-group {
+      display: inline-flex;
+      background: #e2e8f0;
+      padding: 3px;
+      border-radius: 10px;
+      gap: 2px;
+    }
+
+    .tab-btn {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+    }
+
+    /* Summary KPI Row */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .kpi-card.highlight {
+      border-color: var(--blue-border);
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
+
+    .kpi-label {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .kpi-value {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin-top: 4px;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+
+    .kpi-card.highlight .kpi-value {
+      color: var(--blue);
+    }
+
+    .kpi-sub {
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-top: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Alerts */
+    .alerts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .alerts:empty {
+      display: none;
+    }
+
+    .alert-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+    }
+
+    .alert-amber {
+      background: var(--amber-bg);
+      color: var(--amber);
+      border-color: var(--amber-border);
+    }
+
+    .alert-red {
+      background: var(--red-bg);
+      color: var(--red);
+      border-color: var(--red-border);
+    }
+
+    .alert-green {
+      background: var(--green-bg);
+      color: var(--green);
+      border-color: var(--green-border);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      background: #fcfdff;
+      flex-wrap: wrap;
+    }
+
+    .card-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .head-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 7px 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: var(--surface-muted);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn.primary {
+      background: var(--text);
+      color: #ffffff;
+      border-color: var(--text);
+    }
+
+    .btn.primary:hover {
+      opacity: 0.92;
+      background: var(--text);
+    }
+
+    .btn.blue {
+      background: var(--blue);
+      color: #ffffff;
+      border-color: var(--blue);
+    }
+
+    .btn.blue:hover {
+      opacity: 0.92;
+      background: var(--blue);
+    }
+
+    .btn.ghost {
+      border-color: transparent;
+      background: transparent;
+      color: var(--muted);
+      padding: 6px 8px;
+    }
+
+    .btn.ghost:hover {
+      background: var(--surface-muted);
+      color: var(--text);
+    }
+
+    /* Line Items */
+    .lines-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .line-item {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .line-item:last-child {
+      border-bottom: none;
+    }
+
+    .line-grid {
+      display: grid;
+      grid-template-columns: minmax(170px, 1.5fr) minmax(105px, 0.85fr) minmax(150px, 1.25fr) minmax(90px, 0.7fr) auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .field label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      height: 36px;
+      padding: 0 10px;
+      font-size: 13.5px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    select:focus, input[type="number"]:focus, input[type="text"]:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .custom-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--surface-muted);
+      border-radius: 8px;
+    }
+
+    .custom-row.hidden {
+      display: none;
+    }
+
+    .line-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--muted);
+      background: #f8fafc;
+      border: 1px solid #eef2f6;
+      border-radius: 8px;
+      padding: 6px 10px;
+    }
+
+    .line-stats {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .line-stats strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .line-total {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--blue);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .remove-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 0.15s ease;
+    }
+
+    .remove-btn:hover {
+      background: var(--red-bg);
+      color: var(--red);
+      border-color: var(--red-border);
+    }
+
+    .remove-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    /* Pallet & Pack Options */
+    .pallet-bar {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .pallet-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .checkbox-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checkbox-label input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--blue);
+      cursor: pointer;
+    }
+
+    .pallet-inputs {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .pallet-inputs.disabled {
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    /* Copy Output Preview */
+    .quote-box {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .quote-preview {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text);
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* Reference Matrix Table */
+    .view-hidden {
+      display: none !important;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    th, td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    th:first-child, td:first-child {
+      text-align: left;
+      position: sticky;
+      left: 0;
+      background: var(--surface);
+      z-index: 2;
+      font-weight: 700;
+      border-right: 1px solid var(--border);
+    }
+
+    thead th {
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+
+    thead th:first-child {
+      background: #f8fafc;
+      z-index: 3;
+    }
+
+    tbody tr:hover td {
+      background: #f8fbff;
+    }
+
+    .ref-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .ref-controls select {
+      width: auto;
+      height: auto;
+      padding: 6px 10px;
+      line-height: 1.2;
+      font-size: 12.5px;
+    }
+
+    @media (max-width: 780px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .line-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .line-grid .remove-wrap {
+        grid-column: 1 / -1;
+        display: flex;
+        justify-content: flex-end;
+      }
+      .pallet-inputs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Top Header -->
+    <div class="header">
+      <div class="title-group">
+        <h1>⚖️ Panel Weight &amp; Freight Calculator</h1>
+        <p>Instant sheet weight, stack height, pallet load &amp; carrier quote summary</p>
+      </div>
+      <div class="tab-group" role="tablist">
+        <button id="tab-calc" class="tab-btn active" type="button" role="tab" aria-selected="true">Calculator</button>
+        <button id="tab-ref" class="tab-btn" type="button" role="tab" aria-selected="false">Reference Table</button>
+      </div>
+    </div>
+
+    <!-- CALCULATOR VIEW -->
+    <div id="view-calc" style="display:flex;flex-direction:column;gap:14px;">
+      <!-- KPI Summary -->
+      <div class="kpi-grid">
+        <div class="kpi-card highlight">
+          <div class="kpi-label">Total Weight</div>
+          <div id="kpi-gross" class="kpi-value">0 kg</div>
+          <div id="kpi-net-sub" class="kpi-sub">Net panels: 0 kg</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total Sheets</div>
+          <div id="kpi-sheets" class="kpi-value">0</div>
+          <div id="kpi-area-sub" class="kpi-sub">0.0 m² total area</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Pack / Stack Height</div>
+          <div id="kpi-height" class="kpi-value">0 mm</div>
+          <div id="kpi-footprint-sub" class="kpi-sub">Footprint: —</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Est. Pallets</div>
+          <div id="kpi-pallets" class="kpi-value">0</div>
+          <div id="kpi-pallet-sub" class="kpi-sub">Per pallet: —</div>
+        </div>
+      </div>
+
+      <!-- Handling Alerts -->
+      <div id="alerts" class="alerts" aria-live="polite"></div>
+
+      <!-- Line Items Card -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">📦 Panel Lines</div>
+          <div class="head-actions">
+            <button id="clear-btn" class="btn ghost" type="button">Reset</button>
+            <button id="add-line-btn" class="btn primary" type="button">+ Add Line</button>
+          </div>
+        </div>
+        <div id="lines-wrap" class="lines-wrap"></div>
+      </div>
+
+      <!-- Pallet & Pack Settings -->
+      <div class="card">
+        <div class="pallet-bar">
+          <div class="pallet-toggle-row">
+            <label class="checkbox-label">
+              <input id="include-pallet" type="checkbox" checked />
+              Include pallet / gluts in freight weight &amp; height
+            </label>
+            <span id="vol-badge" style="font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;">Volume: 0.00 m³</span>
+          </div>
+          <div id="pallet-inputs" class="pallet-inputs">
+            <div class="field">
+              <label for="pallet-tare">Pallet Tare (kg)</label>
+              <input id="pallet-tare" type="number" min="0" step="5" value="30" />
+            </div>
+            <div class="field">
+              <label for="pallet-height">Pallet Base (mm)</label>
+              <input id="pallet-height" type="number" min="0" step="10" value="120" />
+            </div>
+            <div class="field">
+              <label for="pallet-max-kg">Max kg / Pallet</label>
+              <input id="pallet-max-kg" type="number" min="100" step="50" value="1200" />
+            </div>
+            <div class="field">
+              <label for="pallet-max-mm">Max Stack (mm)</label>
+              <input id="pallet-max-mm" type="number" min="200" step="50" value="950" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Copy for Freight Quote -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">🚚 Freight Quote Summary</div>
+          <div class="head-actions">
+            <button id="copy-quote-btn" class="btn blue" type="button">Copy for Freight Card</button>
+          </div>
+        </div>
+        <div class="quote-box">
+          <pre id="quote-preview" class="quote-preview"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- REFERENCE TABLE VIEW -->
+    <div id="view-ref" class="card view-hidden">
+      <div class="card-head">
+        <div class="card-title">📊 Panel Weights Reference</div>
+        <div class="ref-controls">
+          <label for="ref-mode" style="font-size:12px;color:var(--muted);font-weight:600;">Show:</label>
+          <select id="ref-mode">
+            <option value="kgm2">kg / m² (Notion table)</option>
+            <option value="2440x1220" selected>kg per 2440 × 1220 sheet</option>
+            <option value="2400x1200">kg per 2400 × 1200 sheet</option>
+            <option value="3050x1220">kg per 3050 × 1220 sheet</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="ref-table"></table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // PANEL DENSITIES — Synced with your Notion "Panel Weights" database
+    // =========================================================================
+    const MATERIALS = [
+      { id: 'birch',          name: 'Birch',                          density: 720 },
+      { id: 'birch-filmface', name: 'Birch Filmface',                 density: 730 },
+      { id: 'falcatta',       name: 'Falcatta',                       density: 350 },
+      { id: 'hoop-pine',      name: 'Hoop Pine',                      density: 600 },
+      { id: 'mdf',            name: 'MDF',                            density: 750 },
+      { id: 'mdf-veneer',     name: 'MDF with Veneer (Double Sided)', density: 770 },
+      { id: 'okoume',         name: 'Okoume',                         density: 500 },
+      { id: 'radiata-pine',   name: 'Radiata Pine',                   density: 500 },
+      { id: 'rock-maple',     name: 'Rock Maple',                     density: 650 },
+      { id: 'custom',         name: 'Custom Density…',                density: 650 }
+    ];
+
+    const THICKNESSES = [3, 4, 6, 9, 12, 15, 18, 21, 24, 25, 27, 30, 32, 40];
+
+    const SHEET_PRESETS = [
+      { id: '2440x1220', label: '2440 × 1220 mm', length: 2440, width: 1220 },
+      { id: '2400x1200', label: '2400 × 1200 mm', length: 2400, width: 1200 },
+      { id: '2440x1200', label: '2440 × 1200 mm', length: 2440, width: 1200 },
+      { id: '2745x1220', label: '2745 × 1220 mm', length: 2745, width: 1220 },
+      { id: '3050x1220', label: '3050 × 1220 mm', length: 3050, width: 1220 },
+      { id: '1800x1200', label: '1800 × 1200 mm', length: 1800, width: 1200 },
+      { id: 'custom',    label: 'Custom size…',   length: 2440, width: 1220 }
+    ];
+
+    let nextLineId = 1;
+    let lines = [
+      createDefaultLine('birch', 18, '2440x1220', 20)
+    ];
+
+    function createDefaultLine(materialId = 'birch', thickness = 18, sizePreset = '2440x1220', qty = 10) {
+      const preset = SHEET_PRESETS.find((p) => p.id === sizePreset) || SHEET_PRESETS[0];
+      return {
+        uid: nextLineId++,
+        materialId,
+        customDensity: 650,
+        thicknessPreset: String(thickness),
+        customThickness: thickness,
+        sizePreset,
+        lengthMm: preset.length,
+        widthMm: preset.width,
+        qty
+      };
+    }
+
+    function getLineMetrics(line) {
+      const mat = MATERIALS.find((m) => m.id === line.materialId) || MATERIALS[0];
+      const density = line.materialId === 'custom' ? Math.max(0, Number(line.customDensity) || 0) : mat.density;
+      const thicknessMm = line.thicknessPreset === 'custom'
+        ? Math.max(0, Number(line.customThickness) || 0)
+        : Number(line.thicknessPreset) || 0;
+      const lengthMm = Math.max(0, Number(line.lengthMm) || 0);
+      const widthMm = Math.max(0, Number(line.widthMm) || 0);
+      const qty = Math.max(0, Math.floor(Number(line.qty) || 0));
+
+      const kgPerM2 = (density * thicknessMm) / 1000;
+      const sheetAreaM2 = (lengthMm * widthMm) / 1_000_000;
+      const kgPerSheet = kgPerM2 * sheetAreaM2;
+      const totalKg = kgPerSheet * qty;
+      const totalAreaM2 = sheetAreaM2 * qty;
+      const stackHeightMm = thicknessMm * qty;
+      const volumeM3 = (lengthMm * widthMm * stackHeightMm) / 1_000_000_000;
+
+      const matLabel = line.materialId === 'custom' ? `Custom (${density} kg/m³)` : mat.name;
+
+      return {
+        matLabel,
+        density,
+        thicknessMm,
+        lengthMm,
+        widthMm,
+        qty,
+        kgPerM2,
+        sheetAreaM2,
+        kgPerSheet,
+        totalKg,
+        totalAreaM2,
+        stackHeightMm,
+        volumeM3
+      };
+    }
+
+    // =========================================================================
+    // RENDER LINE ITEMS
+    // =========================================================================
+    const linesWrap = document.getElementById('lines-wrap');
+
+    function renderLines() {
+      linesWrap.innerHTML = '';
+
+      lines.forEach((line) => {
+        const row = document.createElement('div');
+        row.className = 'line-item';
+        row.dataset.uid = line.uid;
+
+        const matOptions = MATERIALS.map((m) =>
+          `<option value="${m.id}" ${m.id === line.materialId ? 'selected' : ''}>${m.name}${m.id !== 'custom' ? ` (${m.density} kg/m³)` : ''}</option>`
+        ).join('');
+
+        const thickOptions = THICKNESSES.map((t) =>
+          `<option value="${t}" ${String(t) === line.thicknessPreset ? 'selected' : ''}>${t} mm</option>`
+        ).join('') + `<option value="custom" ${line.thicknessPreset === 'custom' ? 'selected' : ''}>Custom mm…</option>`;
+
+        const sizeOptions = SHEET_PRESETS.map((s) =>
+          `<option value="${s.id}" ${s.id === line.sizePreset ? 'selected' : ''}>${s.label}</option>`
+        ).join('');
+
+        const showCustom = line.materialId === 'custom' || line.thicknessPreset === 'custom' || line.sizePreset === 'custom';
+
+        row.innerHTML = `
+          <div class="line-grid">
+            <div class="field">
+              <label>Material</label>
+              <select class="in-material">${matOptions}</select>
+            </div>
+            <div class="field">
+              <label>Thickness</label>
+              <select class="in-thickness">${thickOptions}</select>
+            </div>
+            <div class="field">
+              <label>Sheet Size</label>
+              <select class="in-size">${sizeOptions}</select>
+            </div>
+            <div class="field">
+              <label>Quantity</label>
+              <input class="in-qty" type="number" min="0" step="1" value="${line.qty}" />
+            </div>
+            <div class="remove-wrap">
+              <button class="remove-btn" type="button" title="Remove line" ${lines.length <= 1 ? 'disabled' : ''}>×</button>
+            </div>
+          </div>
+
+          <div class="custom-row ${showCustom ? '' : 'hidden'}">
+            ${line.materialId === 'custom' ? `
+              <div class="field">
+                <label>Custom Density (kg/m³)</label>
+                <input class="in-custom-density" type="number" min="50" max="2000" step="10" value="${line.customDensity}" />
+              </div>` : ''}
+            ${line.thicknessPreset === 'custom' ? `
+              <div class="field">
+                <label>Custom Thickness (mm)</label>
+                <input class="in-custom-thickness" type="number" min="1" max="200" step="0.5" value="${line.customThickness}" />
+              </div>` : ''}
+            ${line.sizePreset === 'custom' ? `
+              <div class="field">
+                <label>Length (mm)</label>
+                <input class="in-length" type="number" min="100" step="10" value="${line.lengthMm}" />
+              </div>
+              <div class="field">
+                <label>Width (mm)</label>
+                <input class="in-width" type="number" min="100" step="10" value="${line.widthMm}" />
+              </div>` : ''}
+          </div>
+
+          <div class="line-meta">
+            <div class="line-stats"></div>
+            <div class="line-total"></div>
+          </div>
+        `;
+
+        // Bind events
+        row.querySelector('.in-material').addEventListener('change', (e) => {
+          line.materialId = e.target.value;
+          renderLines();
+          recalculate();
+        });
+
+        row.querySelector('.in-thickness').addEventListener('change', (e) => {
+          line.thicknessPreset = e.target.value;
+          if (line.thicknessPreset !== 'custom') line.customThickness = Number(line.thicknessPreset);
+          renderLines();
+          recalculate();
+        });
+
+        row.querySelector('.in-size').addEventListener('change', (e) => {
+          line.sizePreset = e.target.value;
+          const preset = SHEET_PRESETS.find((p) => p.id === line.sizePreset);
+          if (preset && preset.id !== 'custom') {
+            line.lengthMm = preset.length;
+            line.widthMm = preset.width;
+          }
+          renderLines();
+          recalculate();
+        });
+
+        row.querySelector('.in-qty').addEventListener('input', (e) => {
+          line.qty = e.target.value;
+          recalculate();
+        });
+
+        const customDensityEl = row.querySelector('.in-custom-density');
+        if (customDensityEl) {
+          customDensityEl.addEventListener('input', (e) => {
+            line.customDensity = e.target.value;
+            recalculate();
+          });
+        }
+
+        const customThickEl = row.querySelector('.in-custom-thickness');
+        if (customThickEl) {
+          customThickEl.addEventListener('input', (e) => {
+            line.customThickness = e.target.value;
+            recalculate();
+          });
+        }
+
+        const lengthEl = row.querySelector('.in-length');
+        if (lengthEl) {
+          lengthEl.addEventListener('input', (e) => {
+            line.lengthMm = e.target.value;
+            recalculate();
+          });
+        }
+
+        const widthEl = row.querySelector('.in-width');
+        if (widthEl) {
+          widthEl.addEventListener('input', (e) => {
+            line.widthMm = e.target.value;
+            recalculate();
+          });
+        }
+
+        row.querySelector('.remove-btn').addEventListener('click', () => {
+          if (lines.length <= 1) return;
+          lines = lines.filter((l) => l.uid !== line.uid);
+          renderLines();
+          recalculate();
+        });
+
+        linesWrap.appendChild(row);
+      });
+    }
+
+    // =========================================================================
+    // RECALCULATE TOTALS, PALLETS, ALERTS & FREIGHT SUMMARY
+    // =========================================================================
+    function formatNum(n, decimals = 1) {
+      return Number(n).toLocaleString('en-AU', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
+    }
+
+    function recalculate() {
+      let totalNetKg = 0;
+      let totalSheets = 0;
+      let totalAreaM2 = 0;
+      let totalStackMm = 0;
+      let totalVolumeM3 = 0;
+      let maxLengthMm = 0;
+      let maxWidthMm = 0;
+      let heaviestSheetKg = 0;
+
+      const computed = lines.map((line) => {
+        const m = getLineMetrics(line);
+        totalNetKg += m.totalKg;
+        totalSheets += m.qty;
+        totalAreaM2 += m.totalAreaM2;
+        totalStackMm += m.stackHeightMm;
+        totalVolumeM3 += m.volumeM3;
+        if (m.qty > 0) {
+          maxLengthMm = Math.max(maxLengthMm, m.lengthMm);
+          maxWidthMm = Math.max(maxWidthMm, m.widthMm);
+          heaviestSheetKg = Math.max(heaviestSheetKg, m.kgPerSheet);
+        }
+
+        // Update inline line-meta readout
+        const rowEl = linesWrap.querySelector(`.line-item[data-uid="${line.uid}"]`);
+        if (rowEl) {
+          rowEl.querySelector('.line-stats').innerHTML = `
+            <span><strong>${formatNum(m.kgPerM2, 2)}</strong> kg/m²</span>
+            <span><strong>${formatNum(m.kgPerSheet, 1)}</strong> kg/sheet</span>
+            <span>Area: <strong>${formatNum(m.totalAreaM2, 1)}</strong> m²</span>
+            <span>Stack: <strong>${Math.round(m.stackHeightMm)}</strong> mm</span>
+          `;
+          rowEl.querySelector('.line-total').textContent = `${formatNum(m.totalKg, 1)} kg`;
+        }
+        return m;
+      });
+
+      // Pallet calculation
+      const includePallet = document.getElementById('include-pallet').checked;
+      const palletTare = Math.max(0, Number(document.getElementById('pallet-tare').value) || 0);
+      const palletBaseMm = Math.max(0, Number(document.getElementById('pallet-height').value) || 0);
+      const maxPalletKg = Math.max(100, Number(document.getElementById('pallet-max-kg').value) || 1200);
+      const maxStackMm = Math.max(100, Number(document.getElementById('pallet-max-mm').value) || 950);
+
+      document.getElementById('pallet-inputs').classList.toggle('disabled', !includePallet);
+
+      let pallets = 0;
+      let grossKg = totalNetKg;
+      let avgPackHeightMm = totalStackMm;
+      let avgPackKg = totalNetKg;
+
+      if (totalSheets > 0) {
+        if (includePallet) {
+          const byWeight = Math.ceil(totalNetKg / maxPalletKg);
+          const byHeight = Math.ceil(totalStackMm / maxStackMm);
+          pallets = Math.max(1, byWeight, byHeight);
+          grossKg = totalNetKg + pallets * palletTare;
+          avgPackHeightMm = Math.ceil(totalStackMm / pallets) + palletBaseMm;
+          avgPackKg = grossKg / pallets;
+        } else {
+          pallets = 0;
+          grossKg = totalNetKg;
+          avgPackHeightMm = totalStackMm;
+          avgPackKg = totalNetKg;
+        }
+      }
+
+      // Update KPI cards
+      document.getElementById('kpi-gross').textContent = `${formatNum(grossKg, grossKg >= 100 ? 0 : 1)} kg`;
+      document.getElementById('kpi-net-sub').textContent = includePallet && pallets > 0
+        ? `Net panels: ${formatNum(totalNetKg, 1)} kg + ${pallets * palletTare} kg pallet`
+        : `Net panels: ${formatNum(totalNetKg, 1)} kg`;
+
+      document.getElementById('kpi-sheets').textContent = totalSheets.toLocaleString('en-AU');
+      document.getElementById('kpi-area-sub').textContent = `${formatNum(totalAreaM2, 1)} m² total area`;
+
+      document.getElementById('kpi-height').textContent = `${Math.round(avgPackHeightMm)} mm`;
+      document.getElementById('kpi-footprint-sub').textContent = maxLengthMm
+        ? `${maxLengthMm} × ${maxWidthMm} mm${pallets > 1 ? ' (per pack)' : ''}`
+        : 'Footprint: —';
+
+      document.getElementById('kpi-pallets').textContent = includePallet ? String(pallets) : 'Loose';
+      document.getElementById('kpi-pallet-sub').textContent = includePallet && pallets > 0
+        ? `~${formatNum(avgPackKg, 0)} kg / pallet`
+        : (heaviestSheetKg > 0 ? `Max sheet: ${formatNum(heaviestSheetKg, 1)} kg` : '—');
+
+      document.getElementById('vol-badge').textContent = `Panel volume: ${formatNum(totalVolumeM3, 2)} m³`;
+
+      // Handling & freight alerts
+      const alerts = [];
+      if (heaviestSheetKg >= 25) {
+        alerts.push({
+          cls: 'alert-amber',
+          text: `⚠️ Heaviest sheet is ${formatNum(heaviestSheetKg, 1)} kg — 2-person lift recommended`
+        });
+      } else if (totalSheets > 0) {
+        alerts.push({
+          cls: 'alert-green',
+          text: `✓ Max sheet weight ${formatNum(heaviestSheetKg, 1)} kg (under 25 kg)`
+        });
+      }
+
+      if (includePallet && avgPackKg > 1000) {
+        alerts.push({
+          cls: 'alert-red',
+          text: `🚜 ~${formatNum(avgPackKg, 0)} kg per pallet — Forklift required (exceeds typical 1,000 kg tail-lift)`
+        });
+      } else if (totalSheets > 0 && grossKg > 500) {
+        alerts.push({
+          cls: 'alert-amber',
+          text: `🚚 Total ${formatNum(grossKg, 0)} kg — Confirm forklift or tail-lift access on site`
+        });
+      }
+
+      if (maxLengthMm > 2440) {
+        alerts.push({
+          cls: 'alert-amber',
+          text: `📏 Oversize length (${maxLengthMm} mm) — Check carrier / tail-lift length limits`
+        });
+      }
+
+      document.getElementById('alerts').innerHTML = alerts
+        .map((a) => `<span class="alert-pill ${a.cls}">${a.text}</span>`)
+        .join('');
+
+      // Freight Quote Summary formatted for Notion FREIGHT cards
+      const activeLines = computed.filter((m) => m.qty > 0);
+      let summary = '';
+      if (activeLines.length === 0) {
+        summary = 'Enter a quantity above to generate a freight quote summary.';
+      } else if (activeLines.length === 1) {
+        const m = activeLines[0];
+        summary = [
+          `Material: ${m.matLabel}`,
+          `Quantity: ${m.qty} sheets`,
+          `Sheet Size: ${m.lengthMm} x ${m.widthMm} mm`,
+          `Thickness: ${m.thicknessMm} mm`,
+          `Weight: ${formatNum(m.kgPerSheet, 1)} kg/sheet | Net ${formatNum(totalNetKg, 1)} kg${includePallet ? ` | Gross ${formatNum(grossKg, 0)} kg (${pallets} ${pallets === 1 ? 'pallet' : 'pallets'})` : ''}`,
+          `Est. Pack Size: ${pallets > 1 ? `${pallets}x ` : ''}${maxLengthMm} x ${maxWidthMm} x ${Math.round(avgPackHeightMm)} mm (L x W x H)`
+        ].join('\n');
+      } else {
+        const lineBullets = activeLines.map((m) =>
+          `- ${m.qty} x ${m.matLabel} (${m.lengthMm} x ${m.widthMm} x ${m.thicknessMm} mm) — ${formatNum(m.kgPerSheet, 1)} kg/ea, ${formatNum(m.totalKg, 1)} kg`
+        );
+        summary = [
+          `Materials (${totalSheets} sheets total):`,
+          ...lineBullets,
+          `Total Weight: Net ${formatNum(totalNetKg, 1)} kg${includePallet ? ` | Gross ${formatNum(grossKg, 0)} kg (${pallets} ${pallets === 1 ? 'pallet' : 'pallets'})` : ''}`,
+          `Est. Pack Size: ${pallets > 1 ? `${pallets}x ` : ''}${maxLengthMm} x ${maxWidthMm} x ${Math.round(avgPackHeightMm)} mm (L x W x H)`
+        ].join('\n');
+      }
+
+      document.getElementById('quote-preview').textContent = summary;
+    }
+
+    // =========================================================================
+    // REFERENCE TABLE
+    // =========================================================================
+    function renderRefTable() {
+      const mode = document.getElementById('ref-mode').value;
+      let areaFactor = 1;
+      let unitLabel = 'kg/m²';
+      if (mode === '2440x1220') { areaFactor = (2440 * 1220) / 1_000_000; unitLabel = 'kg/sheet'; }
+      else if (mode === '2400x1200') { areaFactor = (2400 * 1200) / 1_000_000; unitLabel = 'kg/sheet'; }
+      else if (mode === '3050x1220') { areaFactor = (3050 * 1220) / 1_000_000; unitLabel = 'kg/sheet'; }
+
+      const headCells = [
+        'Material',
+        'Density',
+        ...THICKNESSES.map((t) => `${t}mm`)
+      ].map((h) => `<th>${h}</th>`).join('');
+
+      const bodyRows = MATERIALS.filter((m) => m.id !== 'custom').map((m) => {
+        const cells = THICKNESSES.map((t) => {
+          const val = ((m.density * t) / 1000) * areaFactor;
+          return `<td>${val.toFixed(mode === 'kgm2' ? 2 : 1)}</td>`;
+        }).join('');
+        return `<tr><td>${m.name}</td><td>${m.density}</td>${cells}</tr>`;
+      }).join('');
+
+      document.getElementById('ref-table').innerHTML = `
+        <thead><tr>${headCells}</tr></thead>
+        <tbody>${bodyRows}</tbody>
+      `;
+      document.getElementById('ref-table').title = `Values in ${unitLabel}`;
+    }
+
+    // =========================================================================
+    // EVENTS & TABS
+    // =========================================================================
+    document.getElementById('add-line-btn').addEventListener('click', () => {
+      const last = lines[lines.length - 1];
+      lines.push(createDefaultLine(last.materialId, Number(last.thicknessPreset) || 18, last.sizePreset, 10));
+      renderLines();
+      recalculate();
+    });
+
+    document.getElementById('clear-btn').addEventListener('click', () => {
+      lines = [createDefaultLine('birch', 18, '2440x1220', 20)];
+      renderLines();
+      recalculate();
+    });
+
+    ['include-pallet', 'pallet-tare', 'pallet-height', 'pallet-max-kg', 'pallet-max-mm'].forEach((id) => {
+      document.getElementById(id).addEventListener('input', recalculate);
+      document.getElementById(id).addEventListener('change', recalculate);
+    });
+
+    const copyQuoteBtn = document.getElementById('copy-quote-btn');
+    copyQuoteBtn.addEventListener('click', async () => {
+      const text = document.getElementById('quote-preview').textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      copyQuoteBtn.textContent = 'Copied ✓';
+      setTimeout(() => { copyQuoteBtn.textContent = 'Copy for Freight Card'; }, 1600);
+    });
+
+    const tabCalc = document.getElementById('tab-calc');
+    const tabRef = document.getElementById('tab-ref');
+    const viewCalc = document.getElementById('view-calc');
+    const viewRef = document.getElementById('view-ref');
+
+    tabCalc.addEventListener('click', () => {
+      tabCalc.classList.add('active');
+      tabRef.classList.remove('active');
+      tabCalc.setAttribute('aria-selected', 'true');
+      tabRef.setAttribute('aria-selected', 'false');
+      viewCalc.classList.remove('view-hidden');
+      viewRef.classList.add('view-hidden');
+    });
+
+    tabRef.addEventListener('click', () => {
+      tabRef.classList.add('active');
+      tabCalc.classList.remove('active');
+      tabRef.setAttribute('aria-selected', 'true');
+      tabCalc.setAttribute('aria-selected', 'false');
+      viewRef.classList.remove('view-hidden');
+      viewCalc.classList.add('view-hidden');
+      renderRefTable();
+    });
+
+    document.getElementById('ref-mode').addEventListener('change', renderRefTable);
+
+    // Init
+    renderLines();
+    recalculate();
+  </script>
+</body>
+</html>
